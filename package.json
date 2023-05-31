@@ -1,0 +1,11 @@
+{
+  "name": "managed-slack-channels-topic",
+  "version": "1.0.0",
+  "description": "Manage your Slack Channels topics from GitHub",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@slack/web-api": "^6.8.1",
+    "octokit": "^2.0.18"
+  }
+}
