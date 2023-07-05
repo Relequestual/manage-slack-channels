@@ -1,0 +1,47 @@
+name: 'Slack Topic Monitor'
+description: 'Keeping Slack channel topics in line.'
+inputs:
+  owner:
+    description: 'Owner portion of GitHub repo URL'
+    required: true
+  repo:
+    description: 'Repo portion of GitHub repo URL'
+    required: true
+  filePath:
+    description: 'Filepath for the Slack channels and topics JSON file'
+    required: true
+  SLACK_API_TOKEN:
+    description: 'Slack API key'
+    required: true
+  dryRun:
+    description: 'Set this to avoid actually updating Slack channel topics. View the logs!'
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        path: managed-slack-channels-topic
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      shell: bash
+      run: yarn
+      working-directory: managed-slack-channels-topic
+
+    - name: Run script to update Slack topics
+      shell: bash
+      run: node index.js
+      working-directory: managed-slack-channels-topic
+      # env:
+        # SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+        # # SLACK_API_TOKEN: ${{ (secrets.SLACK_API_TOKEN || inputs.SLACK_API_TOKEN) }}
+        # owner: ${{ inputs.owner }}
+        # repo: ${{ inputs.repo }}
+        # filePath: ${{ inputs.filePath }}
+        # dryRun: ${{ fromJSON(inputs.dryRun) }}
