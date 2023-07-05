@@ -13,6 +13,9 @@ inputs:
   SLACK_API_TOKEN:
     description: 'Slack API key'
     required: true
+  GITHUB_TOKEN:
+    description: 'GitHub API key'
+    required: true
   dryRun:
     description: 'Set this to avoid actually updating Slack channel topics. View the logs!'
 

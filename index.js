@@ -1,12 +1,19 @@
 const { WebClient } = require('@slack/web-api');
-const { Octokit } = require('octokit');
+const github = require('@actions/github');
+const core = require('@actions/core');
 
-const token = process.env.SLACK_API_TOKEN;
-const web = new WebClient(token);
+const slackAPIToken = core.getInput('SLACK_API_TOKEN', { required: true });
+core.setSecret(slackAPIToken);
+const slackAPI = new WebClient(slackAPIToken);
+
+const githubAPIToken = core.getInput('GITHUB_TOKEN', { required: true });
+
+console.log({githubAPIToken});
+
+const octokit = github.getOctokit(githubAPIToken);
 
 async function fetchTopicsData(owner, repo, filePath) {
   try {
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
     const response = await octokit.request(`GET /repos/${owner}/${repo}/contents/${filePath}`);
     console.log('Making request', `GET /repos/${owner}/${repo}/contents/${filePath}`);
 
@@ -26,7 +33,7 @@ async function fetchTopicsData(owner, repo, filePath) {
 async function getChannelInfo() {
   try {
     const channels = [];
-    for await (const page of web.paginate('conversations.list', {
+    for await (const page of slackAPI.paginate('conversations.list', {
       types: 'public_channel',
       limit: 100, // Set the desired page size here
     })) {
@@ -51,7 +58,6 @@ async function getChannelInfo() {
 
     return result;
 
-
   } catch (error) {
     console.error('Error fetching channel info:', error);
     return null;
@@ -60,7 +66,7 @@ async function getChannelInfo() {
 
 async function fixChannelTopic(channelId, desiredTopic) {
   try {
-    const response = await web.conversations.setTopic({
+    const response = await slackAPI.conversations.setTopic({
       channel: channelId,
       topic: desiredTopic,
     });
@@ -82,7 +88,7 @@ async function sendNotification(channelId) {
   const message = `The channel topic has been updated by a bot. Channel topics are managed in the following GitHub repository: ${githubRepo}`;
 
   try {
-    const response = await web.chat.postMessage({
+    const response = await slackAPI.chat.postMessage({
       channel: channelId,
       text: message,
     });
@@ -99,7 +105,7 @@ async function sendNotification(channelId) {
 
 async function joinChannel(channelID) {
   try {
-    return web.conversations.join({ channel: channelID });
+    return slackAPI.conversations.join({ channel: channelID });
   } catch (error){
     console.error('Cannot join channel', error);
   }
@@ -134,7 +140,7 @@ async function decodeSlackUserMention(userMention) {
   // Replace user mention with their decoded form
     try {
       // Call Slack API to get user information
-      const userInfo = await web.users.info({
+      const userInfo = await slackAPI.users.info({
         user: userId
       });
 
@@ -163,7 +169,11 @@ async function replaceAsync(string, regex, asyncCallback) {
 
 async function run() {
 
-  const {owner, repo, filePath} = process.env;
+  // const {owner, repo, filePath} = process.env;
+  const owner    = core.getInput('owner',    {required: true});
+  const repo     = core.getInput('repo',     {required: true});
+  const filePath = core.getInput('filePath', {required: true});
+  const isDryRun = core.getBooleanInput('dryRun');
 
   const channelInfo = await getChannelInfo();
   if (!channelInfo) {
@@ -194,7 +204,7 @@ async function run() {
       if (currentTopic !== desiredTopic) {
         console.log('channel topic will be fixed', {channel});
         console.log({currentTopic ,desiredTopic});
-        if (!process.env.dryRun) {
+        if (!isDryRun) {
           if (!is_member) {
             await joinChannel(id);
           } else {
