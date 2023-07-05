@@ -8,24 +8,23 @@ const slackAPI = new WebClient(slackAPIToken);
 
 const githubAPIToken = core.getInput('GITHUB_TOKEN', { required: true });
 
-console.log({githubAPIToken});
-
 const octokit = github.getOctokit(githubAPIToken);
 
 async function fetchTopicsData(owner, repo, filePath) {
   try {
     const response = await octokit.request(`GET /repos/${owner}/${repo}/contents/${filePath}`);
-    console.log('Making request', `GET /repos/${owner}/${repo}/contents/${filePath}`);
+    core.debug('Making request', `GET /repos/${owner}/${repo}/contents/${filePath}`);
 
     if (response.status === 200) {
       const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
       return JSON.parse(content);
     } else {
-      console.error('Failed to retrieve topics data:', response);
+      core.debug(response);
+      core.setFailed('Failed to retrieve topics data:');
       return null;
     }
   } catch (error) {
-    console.error('Error fetching topics data:', error);
+    core.error(`Error fetching topics data: ${error}`);
     return null;
   }
 }
@@ -59,7 +58,7 @@ async function getChannelInfo() {
     return result;
 
   } catch (error) {
-    console.error('Error fetching channel info:', error);
+    core.error( `Error fetching channel info: ${error}`);
     return null;
   }
 }
@@ -74,11 +73,11 @@ async function fixChannelTopic(channelId, desiredTopic) {
     if (response.ok) {
       return true;
     } else {
-      console.error('Failed to fix channel topic:', response.error);
+      core.error('Failed to fix channel topic:', response.error);
       return false;
     }
   } catch (error) {
-    console.error('Error fixing channel topic:', error);
+    core.error('Error fixing channel topic:', error);
     return false;
   }
 }
@@ -94,12 +93,12 @@ async function sendNotification(channelId) {
     });
 
     if (response.ok) {
-      console.log(`Notification sent to channel ${channelId}`);
+      core.info(`Notification sent to channel ${channelId}`);
     } else {
-      console.error('Failed to send notification:', response.error);
+      core.error('Failed to send notification:', response.error);
     }
   } catch (error) {
-    console.error('Error sending notification:', error);
+    core.error('Error sending notification:', error);
   }
 }
 
@@ -107,7 +106,7 @@ async function joinChannel(channelID) {
   try {
     return slackAPI.conversations.join({ channel: channelID });
   } catch (error){
-    console.error('Cannot join channel', error);
+    core.setFailed('Cannot join channel', error);
   }
 }
 
@@ -149,7 +148,7 @@ async function decodeSlackUserMention(userMention) {
 
       return `${username}`;
     } catch (error) {
-      console.error(`Error retrieving user information for user ID: ${userId}`, error);
+      core.error(`Error retrieving user information for user ID: ${userId}`, error);
       return false;
     }
 
@@ -177,54 +176,54 @@ async function run() {
 
   const channelInfo = await getChannelInfo();
   if (!channelInfo) {
-    console.log('Channel info not available. Exiting...');
+    core.setFailed('Channel info not available. Exiting...');
     return;
   } else {
-    console.log({channelInfo});
+    core.debug({channelInfo});
   }
 
   const topicsData = await fetchTopicsData(owner, repo, filePath);
 
   if (!topicsData) {
-    console.log('Topics data not available. Exiting...');
+    core.setFailed('Topics data not available. Exiting...');
     return;
   } else {
-    console.log({topicsData});
+    core.debug({topicsData});
   }
 
-  console.log('Starting channel topic updates...');
+  core.info('Starting channel topic updates...');
 
   const channels = Object.keys(topicsData.channels);
-  console.log({channels});
+  core.debug({channels});
   for (const channel of channels) {
     const channelData = channelInfo[channel];
     if (channelData) {
       const { id, is_member, topic: currentTopic } = channelData;
       const desiredTopic = topicsData.channels[channel];
       if (currentTopic !== desiredTopic) {
-        console.log('channel topic will be fixed', {channel});
-        console.log({currentTopic ,desiredTopic});
+        core.info('channel topic will be fixed', {channel});
+        core.debug({currentTopic ,desiredTopic});
         if (!isDryRun) {
           if (!is_member) {
             await joinChannel(id);
           } else {
-            console.log(`Already joined channel "${channel}"`);
+            core.info(`Already joined channel "${channel}"`);
           }
           if (await fixChannelTopic(id, desiredTopic)) {
             await sendNotification(id);
           }
         } else {
-          console.log(`Not updating ${channel} topic as running in dryRun mode`)
+          core.warning(`Not updating ${channel} topic as running in dryRun mode`)
         }
       } else {
-        console.log('channel topic do NOT need fixing', {channel});
+        core.info('channel topic do NOT need fixing', {channel});
       }
     } else {
-      console.error(`Unable to find ${channel} on slack server`);
+      core.error(`Unable to find ${channel} on slack server`);
     }
   }
 
-  console.log('Channel topic updates completed.');
+  core.info('Channel topic updates completed.');
 }
 
 run();
