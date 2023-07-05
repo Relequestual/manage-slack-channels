@@ -168,7 +168,6 @@ async function replaceAsync(string, regex, asyncCallback) {
 
 async function run() {
 
-  // const {owner, repo, filePath} = process.env;
   const owner    = core.getInput('owner',    {required: true});
   const repo     = core.getInput('repo',     {required: true});
   const filePath = core.getInput('filePath', {required: true});
