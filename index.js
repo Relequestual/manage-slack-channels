@@ -1,3 +1,8 @@
+/*global process*/
+// The above line avoids an eslint error for no-undef rule.
+// GitHub action has a `process` global.
+const { Buffer } = require('node:buffer');
+
 const { WebClient } = require('@slack/web-api');
 const github = require('@actions/github');
 const core = require('@actions/core');
@@ -16,6 +21,7 @@ async function fetchTopicsData(owner, repo, filePath) {
     core.debug('Making request', `GET /repos/${owner}/${repo}/contents/${filePath}`);
 
     if (response.status === 200) {
+      // Contense of the file is base64 encoded and so requires decoding.
       const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
       return JSON.parse(content);
     } else {
@@ -156,7 +162,7 @@ async function decodeSlackUserMention(userMention) {
 async function replaceAsync(string, regex, asyncCallback) {
   const matches = Array.from(string.matchAll(regex));
   const replacements = await Promise.all(
-    matches.map(([match, ...args]) => asyncCallback(match, ...args)),
+    matches.map(([match, ...args]) => asyncCallback(match, ...args))
   );
   // Remember, replace function can be called multiple times
   let currentIndex = 0;
