@@ -45,7 +45,7 @@ async function getChannelInfo() {
           id: channel.id,
           topic: await decodeSlackLinks(channel.topic.value),
           is_member: channel.is_member,
-        }
+        },
       };
     });
 
@@ -56,9 +56,8 @@ async function getChannelInfo() {
     }, {});
 
     return result;
-
   } catch (error) {
-    core.error( `Error fetching channel info: ${error}`);
+    core.error(`Error fetching channel info: ${error}`);
     return null;
   }
 }
@@ -105,7 +104,7 @@ async function sendNotification(channelId) {
 async function joinChannel(channelID) {
   try {
     return slackAPI.conversations.join({ channel: channelID });
-  } catch (error){
+  } catch (error) {
     core.setFailed('Cannot join channel', error);
   }
 }
@@ -137,40 +136,37 @@ async function decodeSlackUserMention(userMention) {
   // Get the user ID from the mention
   const userId = userMention.replace(/^@(.+)$/, '$1');
   // Replace user mention with their decoded form
-    try {
-      // Call Slack API to get user information
-      const userInfo = await slackAPI.users.info({
-        user: userId
-      });
+  try {
+    // Call Slack API to get user information
+    const userInfo = await slackAPI.users.info({
+      user: userId,
+    });
 
-      // Extract the username from the user information
-      const username = userInfo.user.profile.display_name || userInfo.user.name;
+    // Extract the username from the user information
+    const username = userInfo.user.profile.display_name || userInfo.user.name;
 
-      return `${username}`;
-    } catch (error) {
-      core.error(`Error retrieving user information for user ID: ${userId}`, error);
-      return false;
-    }
-
+    return `${username}`;
+  } catch (error) {
+    core.error(`Error retrieving user information for user ID: ${userId}`, error);
+    return false;
+  }
 }
 
 // Helper function to support asynchronous replace operations
 async function replaceAsync(string, regex, asyncCallback) {
   const matches = Array.from(string.matchAll(regex));
-  const replacements = await Promise.all(matches.map(([match, ...args]) => asyncCallback(match, ...args)));
+  const replacements = await Promise.all(
+    matches.map(([match, ...args]) => asyncCallback(match, ...args)),
+  );
   // Remember, replace function can be called multiple times
   let currentIndex = 0;
   return string.replace(regex, () => replacements[currentIndex++]);
 }
 
-
-
-
 async function run() {
-
-  const owner    = core.getInput('owner',    {required: true});
-  const repo     = core.getInput('repo',     {required: true});
-  const filePath = core.getInput('filePath', {required: true});
+  const owner = core.getInput('owner', { required: true });
+  const repo = core.getInput('repo', { required: true });
+  const filePath = core.getInput('filePath', { required: true });
   const isDryRun = core.getBooleanInput('dryRun');
 
   const channelInfo = await getChannelInfo();
@@ -178,7 +174,7 @@ async function run() {
     core.setFailed('Channel info not available. Exiting...');
     return;
   } else {
-    core.debug({channelInfo});
+    core.debug({ channelInfo });
   }
 
   const topicsData = await fetchTopicsData(owner, repo, filePath);
@@ -187,21 +183,21 @@ async function run() {
     core.setFailed('Topics data not available. Exiting...');
     return;
   } else {
-    core.debug({topicsData});
+    core.debug({ topicsData });
   }
 
   core.info('Starting channel topic updates...');
 
   const channels = Object.keys(topicsData.channels);
-  core.debug({channels});
+  core.debug({ channels });
   for (const channel of channels) {
     const channelData = channelInfo[channel];
     if (channelData) {
       const { id, is_member, topic: currentTopic } = channelData;
       const desiredTopic = topicsData.channels[channel];
       if (currentTopic !== desiredTopic) {
-        core.info('channel topic will be fixed', {channel});
-        core.debug({currentTopic ,desiredTopic});
+        core.info('channel topic will be fixed', { channel });
+        core.debug({ currentTopic, desiredTopic });
         if (!isDryRun) {
           if (!is_member) {
             await joinChannel(id);
@@ -212,10 +208,10 @@ async function run() {
             await sendNotification(id);
           }
         } else {
-          core.warning(`Not updating ${channel} topic as running in dryRun mode`)
+          core.warning(`Not updating ${channel} topic as running in dryRun mode`);
         }
       } else {
-        core.info('channel topic do NOT need fixing', {channel});
+        core.info('channel topic do NOT need fixing', { channel });
       }
     } else {
       core.error(`Unable to find ${channel} on slack server`);
