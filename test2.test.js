@@ -1,14 +1,4 @@
-const {
-  spyOn,
-  describe,
-  beforeAll,
-  afterAll,
-  afterEach,
-  expect,
-  clearAllMocks,
-  it,
-} = require('jest');
-const { setupServer } = require('msw/node');
+const { server } = require('./test/msw/server');
 const { rest } = require('msw');
 const core = require('@actions/core');
 const { Buffer } = require('node:buffer');
@@ -18,38 +8,34 @@ const { Buffer } = require('node:buffer');
 const setInput = (name, value) =>
   (process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`] = value);
 
-setInput('SLACK_API_TOKEN', 'not a treal token. Just for tests.');
+setInput('SLACK_API_TOKEN', 'fake_asdfghjkl');
+setInput('GITHUB_TOKEN', 'fake_asdfghjkl');
 
-const coreSetFailedMock = spyOn(core, 'setFailed');
-const coreDebugMock = spyOn(core, 'debug');
-
-const server = setupServer(
-  rest.get('https://api.github.com/repos/:owner/:repo/contents/:filePath', (req, res, ctx) => {
-    // Customize the response based on your test case
-    if (req.url.pathname.includes('successful')) {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          content: Buffer.from('{"topic": "example-topic"}', 'utf-8').toString('base64'),
-        })
-      );
-    } else if (req.url.pathname.includes('non200')) {
-      return res(ctx.status(404));
-    } else {
-      return res(ctx.status(500));
-    }
-  })
-);
+const coreSetFailedMock = jest.spyOn(core, 'setFailed');
+const coreDebugMock = jest.spyOn(core, 'debug');
 
 describe('fetchTopicsData', () => {
   const { fetchTopicsData } = require('./index.js');
 
-  beforeAll(() => server.listen());
-  afterEach(() => {
-    server.resetHandlers();
-    clearAllMocks();
+  beforeEach(() => {
+    server.use(
+      rest.get('https://api.github.com/repos/:owner/:repo/contents/:filePath', (req, res, ctx) => {
+        // Customize the response based on your test case
+        if (req.url.pathname.includes('successful')) {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              content: Buffer.from('{"topic": "example-topic"}', 'utf-8').toString('base64'),
+            })
+          );
+        } else if (req.url.pathname.includes('non200')) {
+          return res(ctx.status(404));
+        } else {
+          return res(ctx.status(500));
+        }
+      })
+    );
   });
-  afterAll(() => server.close());
 
   it('should fetch and parse topics data successfully', async () => {
     const owner = 'example-owner';

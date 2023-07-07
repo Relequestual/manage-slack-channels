@@ -9,4 +9,15 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
   },
+  overrides: [
+    {
+      files: ['**/*.test.js', 'test/**'],
+      plugins: ['jest'],
+      env: {
+        node: true,
+        'jest/globals': true,
+      },
+      extends: ['plugin:jest/recommended'],
+    },
+  ],
 };
