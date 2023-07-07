@@ -3,13 +3,22 @@ const { rest } = require('msw');
 const core = require('@actions/core');
 const { Buffer } = require('node:buffer');
 
-// const { fetchTopicsData } = require('./index.js');
-
 const setInput = (name, value) =>
   (process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`] = value);
 
 setInput('SLACK_API_TOKEN', 'fake_asdfghjkl');
 setInput('GITHUB_TOKEN', 'fake_asdfghjkl');
+
+setInput('owner', 'fake_owner');
+setInput('repo', 'fake_repo');
+setInput('filepath', 'fake_filepath');
+
+setInput('dryRun', false);
+
+const exportedForTesting = require('./src/index.js');
+// When running tests, can't get find this function.
+// TODO: May need to do this https://stackoverflow.com/a/54116079/89211
+const fetchTopicsData = exportedForTesting.fetchTopicsData;
 
 const coreSetFailedMock = jest.spyOn(core, 'setFailed');
 const coreDebugMock = jest.spyOn(core, 'debug');
@@ -35,6 +44,10 @@ describe('fetchTopicsData', () => {
         }
       })
     );
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+  afterEach(() => {
+    server.resetHandlers();
+    // const { fetchTopicsData } = require('./src/index.js');
   });
 
   it('should fetch and parse topics data successfully', async () => {

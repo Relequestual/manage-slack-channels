@@ -173,7 +173,7 @@ async function run() {
   const owner = core.getInput('owner', { required: true });
   const repo = core.getInput('repo', { required: true });
   const filePath = core.getInput('filePath', { required: true });
-  const isDryRun = core.getBooleanInput('dryRun');
+  const isDryRun = core.getBooleanInput('dryRun', { default: 'false' });
 
   const channelInfo = await getChannelInfo();
   if (!channelInfo) {
@@ -228,3 +228,11 @@ async function run() {
 }
 
 run();
+
+const exportedForTesting = {
+  fetchTopicsData,
+};
+
+module.exports = {
+  exportedForTesting,
+};
