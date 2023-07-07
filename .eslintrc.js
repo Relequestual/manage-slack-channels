@@ -5,9 +5,18 @@ module.exports = {
     commonjs: true,
     es2021: true,
   },
-  extends: ['eslint:recommended', 'prettier'],
+  extends: ['eslint:recommended', 'prettier', 'plugin:import/errors', 'plugin:import/warnings'],
   parserOptions: {
     ecmaVersion: 'latest',
+  },
+  rules: {
+    'import/order': [
+      'error',
+      {
+        'newlines-between': 'always',
+        groups: ['builtin', 'external', ['index', 'parent', 'sibling'], 'internal', 'object'],
+      },
+    ],
   },
   overrides: [
     {

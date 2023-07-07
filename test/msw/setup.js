@@ -1,7 +1,7 @@
 const { server } = require('./server');
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledRequest: 'warn' });
 });
 
 afterEach(() => {
