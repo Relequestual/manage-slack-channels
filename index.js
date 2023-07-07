@@ -27,11 +27,11 @@ async function fetchTopicsData(owner, repo, filePath) {
     } else {
       core.debug(response);
       core.setFailed('Failed to retrieve topics data:');
-      return null;
+      return;
     }
   } catch (error) {
-    core.error(`Error fetching topics data: ${error}`);
-    return null;
+    core.setFailed(`Error fetching topics data: ${error}`);
+    return;
   }
 }
 
@@ -64,7 +64,7 @@ async function getChannelInfo() {
     return result;
   } catch (error) {
     core.error(`Error fetching channel info: ${error}`);
-    return null;
+    return;
   }
 }
 
@@ -79,11 +79,11 @@ async function fixChannelTopic(channelId, desiredTopic) {
       return true;
     } else {
       core.error('Failed to fix channel topic:', response.error);
-      return false;
+      return;
     }
   } catch (error) {
     core.error('Error fixing channel topic:', error);
-    return false;
+    return;
   }
 }
 
@@ -154,7 +154,7 @@ async function decodeSlackUserMention(userMention) {
     return `${username}`;
   } catch (error) {
     core.error(`Error retrieving user information for user ID: ${userId}`, error);
-    return false;
+    return;
   }
 }
 
