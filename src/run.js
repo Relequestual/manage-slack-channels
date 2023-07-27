@@ -14,6 +14,16 @@ module.exports.run = async function run({ owner, repo, path, dryRun, slackAPITok
   core.debug('path', path);
   core.debug('dryRun', dryRun);
 
+  const requiredArgs = { owner, repo, path, dryRun, slackAPIToken, githubToken };
+
+  if (Object.values(requiredArgs).includes(undefined)) {
+    const missingArgs = Object.keys(requiredArgs)
+      .filter((arg) => requiredArgs[arg] === undefined)
+      .join(',');
+    core.setFailed(`Missing arguments to run function: ${missingArgs}`);
+    return;
+  }
+
   core.info('Starting channel topic updates.');
 
   const slackAPI = new WebClient(slackAPIToken);
@@ -39,14 +49,13 @@ module.exports.run = async function run({ owner, repo, path, dryRun, slackAPITok
 
   const topicChannels = Object.keys(topicsData);
 
-  core.info('Found topic data for channel(s):', ...topicChannels);
+  core.info(`Found topic data for channel(s):${topicChannels.join(',')}`);
 
   for (let [name, { topic }] of Object.entries(topicsData)) {
     let { [name]: channel } = channelInfo;
 
     if (!channel) {
-      // We don't know this channel
-      // TODO: put handling this back? Or pre-filter this list?
+      core.error(`Unknown channel ${channel}`);
       continue;
     }
 
@@ -57,7 +66,6 @@ module.exports.run = async function run({ owner, repo, path, dryRun, slackAPITok
         await joinChannel({ slackAPI, channel: channel.id });
       }
     }
-
     core.info(`Comparing topics. GitHub: ${topic}. Slack: ${channel.topic}`);
 
     if (channel.topic !== topic) {

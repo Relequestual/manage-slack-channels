@@ -7,8 +7,8 @@ inputs:
   repo:
     description: 'Repo portion of GitHub repo URL'
     required: true
-  filePath:
-    description: 'Filepath for the Slack channels and topics JSON file'
+  path:
+    description: 'path for the Slack channels and topics JSON file'
     required: true
   SLACK_API_TOKEN:
     description: 'Slack API key'

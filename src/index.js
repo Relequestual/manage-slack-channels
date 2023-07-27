@@ -7,7 +7,7 @@ const slackAPIToken = core.getInput('SLACK_API_TOKEN', { required: true });
 
 const owner = core.getInput('owner', { required: true });
 const repo = core.getInput('repo', { required: true });
-const filePath = core.getInput('filePath', { required: true });
-const dryRun = core.getBooleanInput('dryRun', { default: 'false' });
+const path = core.getInput('path', { required: true });
+const dryRun = core.getBooleanInput('dryRun', { default: false });
 
-run({ githubToken, slackAPIToken, owner, repo, filePath, dryRun });
+run({ githubToken, slackAPIToken, owner, repo, path, dryRun });
