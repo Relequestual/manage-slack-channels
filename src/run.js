@@ -47,11 +47,13 @@ module.exports.run = async function run({ owner, repo, path, dryRun, slackAPITok
     return;
   }
 
-  const topicChannels = Object.keys(topicsData);
+  const desiredTopics = topicsData.channels;
+
+  const topicChannels = Object.keys(desiredTopics);
 
   core.info(`Found topic data for channel(s):${topicChannels.join(',')}`);
 
-  for (let [name, { topic }] of Object.entries(topicsData)) {
+  for (let [name, topic] of Object.entries(desiredTopics)) {
     let { [name]: channel } = channelInfo;
 
     if (!channel) {

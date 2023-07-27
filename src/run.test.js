@@ -46,8 +46,10 @@ test('example invocation, not comprehensive', async () => {
     asdfghjkl: { id: 'asdfghjkl', is_member: false, topic: 'asdfghjkl' },
   };
   const mockTopicData = {
-    qwertyuiop: { topic: 'qwertyuiop' },
-    asdfghjkl: { topic: 'asdfghjklasdfghjkl' },
+    channels: {
+      qwertyuiop: 'qwertyuiop',
+      asdfghjkl: 'asdfghjklasdfghjkl',
+    },
   };
 
   getChannelInfo.mockResolvedValueOnce(mockChannelInfo);
