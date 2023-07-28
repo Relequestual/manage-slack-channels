@@ -1,5 +1,9 @@
 name: 'Slack Topic Monitor'
 description: 'Keeping Slack channel topics in line.'
+branding:
+  icon: 'clipboard'
+  color: 'gray-dark'
+author: '@relequestual'
 inputs:
   owner:
     description: 'Owner portion of GitHub repo URL'
