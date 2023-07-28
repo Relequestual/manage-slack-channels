@@ -40,5 +40,5 @@ runs:
 
     - name: Run script to update Slack topics
       shell: bash
-      run: node src/index.js
+      run: node dist/index.js
       working-directory: managed-slack-channels-topic
