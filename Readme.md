@@ -2,6 +2,7 @@
 <a href="https://project-types.github.io/#toy">
 <img src="https://img.shields.io/badge/project%20type-toy-blue" alt="Toy Badge"/>
 </a>
+[![CI](https://github.com/Relequestual/manage-slack-channels/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/Relequestual/manage-slack-channels/actions/workflows/ci.yaml)
 
 This readme and repo is a WIP.
 The readme may not reflect the current truth. Best of luck.
