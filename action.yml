@@ -1,27 +1,27 @@
-name: 'Slack Topic Monitor'
-description: 'Keeping Slack channel topics in line.'
+name: "Slack Topic Monitor"
+description: "Keeping Slack channel topics in line."
 branding:
-  icon: 'clipboard'
-  color: 'gray-dark'
-author: '@relequestual'
+  icon: "clipboard"
+  color: "gray-dark"
+author: "@relequestual"
 inputs:
   owner:
-    description: 'Owner portion of GitHub repo URL'
+    description: "Owner portion of GitHub repo URL"
     required: true
   repo:
-    description: 'Repo portion of GitHub repo URL'
+    description: "Repo portion of GitHub repo URL"
     required: true
   path:
-    description: 'path for the Slack channels and topics JSON file'
+    description: "path for the Slack channels and topics JSON file"
     required: true
   SLACK_API_TOKEN:
-    description: 'Slack API key'
+    description: "Slack API key"
     required: true
   GITHUB_TOKEN:
-    description: 'GitHub API key'
+    description: "GitHub API key"
     required: true
   dryRun:
-    description: 'Set this to avoid actually updating Slack channel topics. View the logs!'
+    description: "Set this to avoid actually updating Slack channel topics. View the logs!"
     default: "false"
 
 runs:
@@ -35,7 +35,7 @@ runs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: "18"
 
     - name: Install dependencies
       shell: bash
