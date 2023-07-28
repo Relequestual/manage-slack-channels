@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npx @vercel/ncc build src/index.js && npx convert-action",
+    "build": "npx @vercel/ncc build src/index.js",
     "eslint": "eslint . --ext js",
     "eslint:fix": "npm run eslint -- --fix",
     "test": "jest",
